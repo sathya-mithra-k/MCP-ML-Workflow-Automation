@@ -13,9 +13,6 @@ from sklearn.compose import ColumnTransformer
 from sklearn.utils.multiclass import type_of_target
 from datetime import datetime
 
-# If you use FastMCP in your server:
-# from mcp.server.fastmcp import FastMCP
-# mcp = FastMCP("ml-workflow-server")
 
 def _normalize_colName(col_name: str) -> str:
     return (
@@ -65,6 +62,17 @@ def _get_ohe_feature_names(transformer, cols: List[str]) -> List[str]:
         except Exception:
             # final fallback
             return cols
+
+def _make_onehot_encoder() -> OneHotEncoder:
+    """
+    sklearn compatibility helper:
+    - newer versions use `sparse_output`
+    - older versions use `sparse`
+    """
+    try:
+        return OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+    except TypeError:
+        return OneHotEncoder(handle_unknown="ignore", sparse=False)
 
 def preprocess_data_mcp(
     data: pd.DataFrame,
@@ -116,11 +124,9 @@ def preprocess_data_mcp(
             num_steps.append(("scaler", StandardScaler()))
         numeric_pipeline = Pipeline(num_steps)
 
-        # Use `sparse=False` for compatibility; sklearn will accept sparse_output in newer versions,
-        # but sparse=False works across versions.
         categorical_pipeline = Pipeline([
             ("imputer", SimpleImputer(strategy="constant", fill_value="__MISSING__")),
-            ("encoder", OneHotEncoder(handle_unknown="ignore", sparse=False)),
+            ("encoder", _make_onehot_encoder()),
         ])
 
         transformers = []
