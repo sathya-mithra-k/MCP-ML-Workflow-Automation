@@ -1,10 +1,10 @@
 from mcp.server.fastmcp import FastMCP
-from read_csv import read_csv
+from tools.read_csv import read_csv
 from pathlib import Path
 import json
 import pandas as pd
-from preprocess import preprocess_data_mcp
-from Train import train_model
+from tools.preprocess import preprocess_data_mcp
+from tools.train import train_model
 
 mcp = FastMCP()
 
